@@ -11,7 +11,6 @@ body {
     color: #333;
 }
 
-/* Page visibility rules (Phase 1) */
 .page {
     display: none;
 }
@@ -67,6 +66,8 @@ body {
     padding: 12px 16px;
     display: block;
     text-align: left;
+    margin: 0;
+    white-space: nowrap;
 }
 
 .dropdown-menu a:hover {
@@ -79,12 +80,9 @@ body {
 
 body.not-authenticated .role-logged-in { display: none; }
 body.authenticated .role-logged-out { display: none; }
-.role-admin {
-    display: none;
-}
-body.is-admin .role-admin {
-    display: block;
-}
+
+.role-admin { display: none; }
+body.is-admin .role-admin { display: block; }
 
 /* Main Content */
 main {
@@ -125,7 +123,8 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="date"],
-select {
+select,
+textarea {
     width: 100%;
     padding: 0.5rem;
     margin-top: 0.25rem;
@@ -179,7 +178,7 @@ button[type="button"]:not(.btn-primary):not(.dropdown-toggle):hover {
     color: #fff;
     cursor: pointer;
     font-size: 1rem;
-    padding: 0.5rem;
+    padding: 0.5rem 0;
     margin-top: 0;
 }
 
@@ -352,6 +351,25 @@ code {
     to { transform: translateX(0); opacity: 1; }
 }
 
+/* Profile Page */
+#profile-page {
+    background: none;
+    box-shadow: none;
+    padding: 1rem 0;
+}
+
+#profileContent {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 1rem;
+}
+
+#profileContent h2 {
+    margin-bottom: 0.75rem;
+}
+
 /* Small Buttons (table actions) */
 .btn-sm {
     padding: 0.25rem 0.5rem;
@@ -368,6 +386,8 @@ code {
 .btn-edit:hover { background: #0056b3; }
 .btn-warn { background: #ffc107; color: #333; }
 .btn-warn:hover { background: #e0a800; }
+.btn-success { background: #28a745; }
+.btn-success:hover { background: #218838; }
 .btn-danger { background: #dc3545; }
 .btn-danger:hover { background: #c82333; }
 
@@ -409,7 +429,81 @@ code {
     font-size: 1rem;
 }
 
-/* Responsive */
+/* Center home page section */
+section#home-page.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 60vh;
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+section#home-page h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+section#home-page p {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+section#home-page ul {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    display: inline-block;
+}
+
+section#home-page button {
+    margin-top: 2rem;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* Center login page section */
+section#login-page.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+section#login-page form {
+    width: 100%;
+    max-width: 500px;
+}
+
+section#login-page h2 {
+    margin-bottom: 1.5rem;
+}
+
+/* Center register page section */
+section#register-page.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+section#register-page form {
+    width: 100%;
+    max-width: 500px;
+}
+
+section#register-page h2 {
+    margin-bottom: 1.5rem;
+}
+
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;

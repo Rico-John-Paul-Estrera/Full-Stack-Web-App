@@ -1,8 +1,6 @@
-// ========== GLOBAL STATE ==========
 let currentUser = null;
 const STORAGE_KEY = 'ipt_demo_v1';
 
-// ========== DATA PERSISTENCE (Phase 4) ==========
 function getDefaultData() {
     return {
         accounts: [
@@ -11,7 +9,7 @@ function getDefaultData() {
                 firstName: 'Admin',
                 lastName: 'User',
                 email: 'admin@example.com',
-                password: 'admin123',
+                password: 'Password123!',
                 role: 'Admin',
                 verified: true
             }
@@ -30,7 +28,6 @@ function loadFromStorage() {
         const data = localStorage.getItem(STORAGE_KEY);
         if (data) {
             window.db = JSON.parse(data);
-            // Ensure all arrays exist
             if (!window.db.accounts) window.db.accounts = [];
             if (!window.db.departments) window.db.departments = [];
             if (!window.db.employees) window.db.employees = [];
@@ -49,7 +46,6 @@ function saveToStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(window.db));
 }
 
-// ========== TOAST NOTIFICATIONS (Phase 8) ==========
 function showToast(message, type) {
     type = type || 'info';
     const container = document.getElementById('toastContainer');
@@ -63,7 +59,6 @@ function showToast(message, type) {
     }, 3000);
 }
 
-// ========== CLIENT-SIDE ROUTING (Phase 2) ==========
 function navigateTo(hash) {
     window.location.hash = hash;
 }
@@ -83,8 +78,8 @@ function handleRouting() {
         return;
     }
     if (adminRoutes.includes(pageName) && (!currentUser || currentUser.role !== 'Admin')) {
-        showToast('Access denied. Admins only.', 'error');
-        navigateTo('#/');
+        showToast('Access Denied. Admin Only', 'error');
+        navigateTo('#/profile');
         return;
     }
 
@@ -99,7 +94,6 @@ function handleRouting() {
         document.getElementById('home-page').classList.add('active');
     }
 
-    // Render page-specific content
     if (pageName === 'profile' && currentUser) renderProfile();
     if (pageName === 'verify-email') {
         const email = localStorage.getItem('unverified_email');
@@ -113,7 +107,6 @@ function handleRouting() {
 
 window.addEventListener('hashchange', handleRouting);
 
-// ========== AUTH STATE (Phase 3D) ==========
 function setAuthState(isAuth, user) {
     if (isAuth && user) {
         currentUser = user;
@@ -133,7 +126,6 @@ function setAuthState(isAuth, user) {
     }
 }
 
-// ========== REGISTRATION (Phase 3A) ==========
 function handleRegistration() {
     const firstName = document.getElementById('regFirstName').value.trim();
     const lastName = document.getElementById('regLastName').value.trim();
@@ -171,7 +163,6 @@ function handleRegistration() {
     navigateTo('#/verify-email');
 }
 
-// ========== EMAIL VERIFICATION (Phase 3B) ==========
 function simulateEmailVerification() {
     const unverifiedEmail = localStorage.getItem('unverified_email');
     if (!unverifiedEmail) {
@@ -190,7 +181,6 @@ function simulateEmailVerification() {
     }
 }
 
-// ========== LOGIN (Phase 3C) ==========
 function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
@@ -214,7 +204,6 @@ function handleLogin() {
         showToast('Login successful!', 'success');
         navigateTo('#/profile');
     } else {
-        // Check if unverified
         const unverified = window.db.accounts.find(function(acc) {
             return acc.email === email && acc.password === password && !acc.verified;
         });
@@ -226,7 +215,6 @@ function handleLogin() {
     }
 }
 
-// ========== LOGOUT (Phase 3E) ==========
 function handleLogout() {
     localStorage.removeItem('auth_token');
     setAuthState(false);
@@ -234,7 +222,6 @@ function handleLogout() {
     navigateTo('#/');
 }
 
-// ========== PROFILE (Phase 5) ==========
 function renderProfile() {
     if (currentUser) {
         document.getElementById('profileName').textContent = currentUser.firstName + ' ' + currentUser.lastName;
@@ -243,7 +230,6 @@ function renderProfile() {
     }
 }
 
-// ========== ACCOUNTS CRUD (Phase 6A) ==========
 let editingAccountId = null;
 
 function renderAccountsList() {
@@ -264,21 +250,20 @@ function renderAccountsList() {
         tbody.appendChild(tr);
     });
 
-    // Edit buttons
     tbody.querySelectorAll('.btn-edit').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var id = Number(btn.getAttribute('data-id'));
             editAccount(id);
         });
     });
-    // Reset PW buttons
+
     tbody.querySelectorAll('.btn-warn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var id = Number(btn.getAttribute('data-id'));
             resetAccountPassword(id);
         });
     });
-    // Delete buttons
+
     tbody.querySelectorAll('.btn-danger').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var id = Number(btn.getAttribute('data-id'));
@@ -396,7 +381,8 @@ function deleteAccount(id) {
     }
 }
 
-// ========== DEPARTMENTS (Phase 6B) ==========
+let editingDeptId = null;
+
 function renderDepartmentsList() {
     var tbody = document.getElementById('departmentsBody');
     tbody.innerHTML = '';
@@ -405,38 +391,90 @@ function renderDepartmentsList() {
         tr.innerHTML =
             '<td>' + dept.name + '</td>' +
             '<td>' + dept.description + '</td>' +
-            '<td><button class="btn-sm btn-danger" data-id="' + dept.id + '">Delete</button></td>';
+            '<td><button class="btn-sm btn-edit" data-id="' + dept.id + '">Edit</button> ' +
+            '<button class="btn-sm btn-danger" data-id="' + dept.id + '">Delete</button></td>';
         tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('.btn-edit').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = Number(btn.getAttribute('data-id'));
+            editDept(id);
+        });
     });
 
     tbody.querySelectorAll('.btn-danger').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var id = Number(btn.getAttribute('data-id'));
-            if (confirm('Delete this department?')) {
-                window.db.departments = window.db.departments.filter(function(d) { return d.id !== id; });
-                saveToStorage();
-                showToast('Department deleted', 'success');
-                renderDepartmentsList();
-            }
+            deleteDept(id);
         });
     });
 }
 
-function addDepartment() {
-    var name = prompt('Department name:');
-    if (!name || !name.trim()) return;
-    var desc = prompt('Department description:');
-    window.db.departments.push({
-        id: Date.now(),
-        name: name.trim(),
-        description: (desc || '').trim()
-    });
-    saveToStorage();
-    showToast('Department added', 'success');
-    renderDepartmentsList();
+function showDeptForm(dept) {
+    document.getElementById('departmentForm').style.display = 'block';
+    if (dept) {
+        editingDeptId = dept.id;
+        document.getElementById('deptName').value = dept.name;
+        document.getElementById('deptDescription').value = dept.description;
+    } else {
+        editingDeptId = null;
+        document.getElementById('deptName').value = '';
+        document.getElementById('deptDescription').value = '';
+    }
 }
 
-// ========== EMPLOYEES CRUD (Phase 6C) ==========
+function hideDeptForm() {
+    document.getElementById('departmentForm').style.display = 'none';
+    editingDeptId = null;
+}
+
+function saveDept() {
+    var name = document.getElementById('deptName').value.trim();
+    var description = document.getElementById('deptDescription').value.trim();
+
+    if (!name) {
+        showToast('Department name is required', 'error');
+        return;
+    }
+
+    if (editingDeptId) {
+        var dept = window.db.departments.find(function(d) { return d.id === editingDeptId; });
+        if (dept) {
+            dept.name = name;
+            dept.description = description;
+        }
+    } else {
+        window.db.departments.push({
+            id: Date.now(),
+            name: name,
+            description: description
+        });
+    }
+    saveToStorage();
+    hideDeptForm();
+    renderDepartmentsList();
+    showToast(editingDeptId ? 'Department updated' : 'Department added', 'success');
+}
+
+function editDept(id) {
+    var dept = window.db.departments.find(function(d) { return d.id === id; });
+    if (dept) showDeptForm(dept);
+}
+
+function deleteDept(id) {
+    if (confirm('Delete this department?')) {
+        window.db.departments = window.db.departments.filter(function(d) { return d.id !== id; });
+        saveToStorage();
+        showToast('Department deleted', 'success');
+        renderDepartmentsList();
+    }
+}
+
+function addDepartment() {
+    alert('Not implemented');
+}
+
 let editingEmployeeIdx = null;
 
 function renderEmployeesTable() {
@@ -522,7 +560,6 @@ function saveEmployee() {
         return;
     }
 
-    // Verify email exists in accounts
     var account = window.db.accounts.find(function(a) { return a.email === email; });
     if (!account) {
         showToast('No account with that email exists', 'error');
@@ -565,27 +602,36 @@ function deleteEmployee(idx) {
     }
 }
 
-// ========== REQUESTS (Phase 7) ==========
 function renderRequestsList() {
     var container = document.getElementById('requestsContent');
     container.innerHTML = '';
 
     if (!currentUser) return;
 
-    var userRequests = window.db.requests.filter(function(r) {
-        return r.employeeEmail === currentUser.email;
-    });
+    var isAdmin = currentUser.role === 'Admin';
+    var userRequests;
+    
+    if (isAdmin) {
+        userRequests = window.db.requests;
+    } else {
+        userRequests = window.db.requests.filter(function(r) {
+            return r.employeeEmail === currentUser.email;
+        });
+    }
 
     if (userRequests.length === 0) {
-        container.innerHTML = '<p>No requests found. Click "+ New Request" to create one.</p>';
+        container.innerHTML = '<p>No requests found.' + (isAdmin ? '' : ' Click "+ New Request" to create one.') + '</p>';
         return;
     }
 
     var table = document.createElement('table');
-    table.innerHTML =
-        '<thead><tr>' +
-            '<th>Date</th><th>Type</th><th>Items</th><th>Status</th>' +
-        '</tr></thead>';
+    var headerHtml = '<thead><tr>' +
+            '<th>Date</th><th>Type</th><th>Items</th><th>Status</th>';
+    if (isAdmin) {
+        headerHtml += '<th>Employee Email</th><th>Actions</th>';
+    }
+    headerHtml += '</tr></thead>';
+    table.innerHTML = headerHtml;
     var tbody = document.createElement('tbody');
 
     userRequests.forEach(function(req) {
@@ -595,16 +641,63 @@ function renderRequestsList() {
         if (req.status === 'Approved') badgeClass = 'badge-success';
         if (req.status === 'Rejected') badgeClass = 'badge-danger';
 
-        tr.innerHTML =
-            '<td>' + req.date + '</td>' +
+        var rowHtml = '<td>' + req.date + '</td>' +
             '<td>' + req.type + '</td>' +
             '<td>' + itemsList + '</td>' +
             '<td><span class="badge ' + badgeClass + '">' + req.status + '</span></td>';
+
+        if (isAdmin) {
+            rowHtml += '<td>' + req.employeeEmail + '</td>';
+            var actionsHtml = '';
+            if (req.status === 'Pending') {
+                actionsHtml = '<button class="btn-sm btn-success approve-btn" data-req-id="' + req.id + '">Approve</button>' +
+                              '<button class="btn-sm btn-danger reject-btn" data-req-id="' + req.id + '">Reject</button>';
+            }
+            rowHtml += '<td>' + actionsHtml + '</td>';
+        }
+
+        tr.innerHTML = rowHtml;
         tbody.appendChild(tr);
     });
 
     table.appendChild(tbody);
     container.appendChild(table);
+
+    if (isAdmin) {
+        tbody.querySelectorAll('.approve-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var reqId = Number(btn.getAttribute('data-req-id'));
+                approveRequest(reqId);
+            });
+        });
+
+        tbody.querySelectorAll('.reject-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var reqId = Number(btn.getAttribute('data-req-id'));
+                rejectRequest(reqId);
+            });
+        });
+    }
+}
+
+function approveRequest(reqId) {
+    var request = window.db.requests.find(function(r) { return r.id === reqId; });
+    if (request) {
+        request.status = 'Approved';
+        saveToStorage();
+        renderRequestsList();
+        showToast('Request approved', 'success');
+    }
+}
+
+function rejectRequest(reqId) {
+    var request = window.db.requests.find(function(r) { return r.id === reqId; });
+    if (request) {
+        request.status = 'Rejected';
+        saveToStorage();
+        renderRequestsList();
+        showToast('Request rejected', 'error');
+    }
 }
 
 function openRequestModal() {
@@ -664,12 +757,10 @@ function submitRequest() {
     renderRequestsList();
 }
 
-// ========== INIT ON DOM READY ==========
 document.addEventListener('DOMContentLoaded', function() {
-    // Load data from localStorage
+
     loadFromStorage();
 
-    // Check for existing auth token
     var savedToken = localStorage.getItem('auth_token');
     if (savedToken) {
         var savedUser = window.db.accounts.find(function(a) { return a.email === savedToken; });
@@ -678,13 +769,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Initialize routing
     if (!window.location.hash || window.location.hash === '#') {
         window.location.hash = '#/';
     }
     handleRouting();
 
-    // Dropdown toggle
     var dropdown = document.querySelector('.dropdown');
     var toggle = document.getElementById('userDropdown');
     if (toggle) {
@@ -699,43 +788,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Registration
     document.getElementById('registerForm').addEventListener('submit', function(e) {
         e.preventDefault();
         handleRegistration();
     });
 
-    // Email verification
     document.getElementById('simulateVerifyBtn').addEventListener('click', simulateEmailVerification);
 
-    // Login
     document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
         handleLogin();
     });
 
-    // Logout
     document.getElementById('logoutBtn').addEventListener('click', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         handleLogout();
     });
 
-    // Accounts
     document.getElementById('addAccountBtn').addEventListener('click', function() { showAccountForm(null); });
     document.getElementById('saveAccountBtn').addEventListener('click', saveAccount);
     document.getElementById('cancelAccountBtn').addEventListener('click', hideAccountForm);
 
-    // Departments
     document.getElementById('addDeptBtn').addEventListener('click', addDepartment);
+    document.getElementById('saveDeptBtn').addEventListener('click', saveDept);
+    document.getElementById('cancelDeptBtn').addEventListener('click', hideDeptForm);
 
-    // Employees
     document.getElementById('addEmployeeBtn').addEventListener('click', function() { showEmployeeForm(null); });
     document.getElementById('saveEmployeeBtn').addEventListener('click', saveEmployee);
     document.getElementById('cancelEmployeeBtn').addEventListener('click', hideEmployeeForm);
 
-    // Requests
     document.getElementById('newRequestBtn').addEventListener('click', openRequestModal);
     document.getElementById('closeRequestModal').addEventListener('click', closeRequestModal);
     document.getElementById('addRequestItemBtn').addEventListener('click', addRequestItem);
     document.getElementById('submitRequestBtn').addEventListener('click', submitRequest);
+
+    document.addEventListener('click', function () {
+        const toastContainer = document.getElementById('toastContainer');
+        if (toastContainer) {
+            toastContainer.innerHTML = '';
+        }
+    });
 });
